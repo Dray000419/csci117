@@ -1,0 +1,109 @@
+// Run this program through the Oz interpreter by calling
+//    runFull "declarative" "Sem3.txt" "Sem3.out"
+// Explain the resulting store
+
+local P1 P2 K1 K2 A1 A2 A3 A4 DB1 DB2 F1 F2 F3 F4 in
+	P1 = person(kid:K1 age:A1 dob:DB1 food:F3)
+	P2 = person(kid:K2 age:A2 dob:DB2 food:F4)
+	K1 = kid(age:A3 food:F1)
+	K2 = kid(age:A4 food:F2)
+	A3 = 12
+	F2 = spaghetti()
+	A1 = 54
+	DB2 = 1978
+	P1 = P2
+    skip Full
+end
+
+
+// [local ["P1","P2","K1","K2","A1","A2","A3","A4","DB1","DB2","F1","F2","F3","F4"] [local ["EXU1","EXU2","EXU3","EXU4"] [EXU1 = K1,EXU2 = A1,EXU3 = DB1,EXU4 = F3,P1 = person(kid:EXU1 age:EXU2 dob:EXU3 food:EXU4)],local ["EXU1","EXU2","EXU3","EXU4"] [EXU1 = K2,EXU2 = A2,EXU3 = DB2,EXU4 = F4,P2 = person(kid:EXU1 age:EXU2 dob:EXU3 food:EXU4)],local ["EXU1","EXU2"] [EXU1 = A3,EXU2 = F1,K1 = kid(age:EXU1 food:EXU2)],local ["EXU1","EXU2"] [EXU1 = A4,EXU2 = F2,K2 = kid(age:EXU1 food:EXU2)],A3 = 12,F2 = spaghetti(),A1 = 54,DB2 = 1978,P1 = P2,skip/f]]
+
+// Store :
+// ((31, 18, 33, 19), spaghetti()), ------> united kids food
+// ((30, 14, 32, 15), 12), -------> united kids ages
+// ((22, 10, 26, 11), kid(age:30 food:31)), -------> united kids
+// ((25, 20, 29, 21), Unbound), -------> united person.food
+// ((24, 16, 28, 17), 1978), -------> united person.dob
+// ((23, 12, 27, 13), 54), -------> united person.ages
+// ((8, 9), person(age:23 dob:24 food:25 kid:22)), ------> united person
+// ((1), Primitive Operation),
+// ((2), Primitive Operation), 
+// ((3), Primitive Operation),
+// ((4), Primitive Operation),
+// ((5), Primitive Operation),
+// ((6), Primitive Operation),
+// ((7), Primitive Operation)
+
+// Mutable Store: Empty
+// Current Environment : ("P1" -> 8, "P2" -> 9, "K1" -> 10, "K2" -> 11, "A1" -> 12, "A2" -> 13, "A3" -> 14, "A4" -> 15, "DB1" -> 16, "DB2" -> 17, "F1" -> 18, "F2" -> 19, "F3" -> 20, "F4" -> 21, "IntPlus" -> 1, "IntMinus" -> 2, "Eq" -> 3, "GT" -> 4, "LT" -> 5, "Mod" -> 6, "IntMultiply" -> 7)
+// Stack : ""
+
+
+
+// For the Environment, program set up primitive operations, and then add them to environment.
+// Environment: ( "IntPlus" -> 1, "IntMinus" -> 2, "Eq" -> 3, "GT" -> 4, "LT" -> 5, "Mod" -> 6, "IntMultiply" -> 7 )
+
+// "local P1 P2 K1 K2 A1 A2 A3 A4 DB1 DB2 F1 F2 F3 F4 in ...." created those variables and add them to environment
+// Environment : ("P1" -> 8, "P2" -> 9, "K1" -> 10, "K2" -> 11, "A1" -> 12, "A2" -> 13, "A3" -> 14, "A4" -> 15, "DB1" -> 16, "DB2" -> 17, "F1" -> 18, "F2" -> 19, "F3" -> 20, "F4" -> 21, "IntPlus" -> 1, "IntMinus" -> 2, "Eq" -> 3, "GT" -> 4, "LT" -> 5, "Mod" -> 6, "IntMultiply" -> 7)
+
+// After "local P1 P2 K1 K2 A1 A2 A3 A4 DB1 DB2 F1 F2 F3 F4 in" executed, we have
+// "P1" -> ((8),unbound)  "P2" -> ((9),unbound) "K1" -> ((10),unbound) "K2" -> ((11),unbound) "A1" -> ((12),unbound) "A2" -> ((13),unbound) "A3" -> ((14),unbound)
+// "A4" -> ((15),unbound) "DB1" -> ((16),unbound) "DB2" -> ((17),unbound) "F1" -> ((18),unbound) "F2" -> ((19),unbound) "F3" -> ((20),unbound) "F4" -> ((21),unbound)
+
+// After "P1 = person(kid:K1 age:A1 dob:DB1 food:F3)" executed, we have
+// "P1" -> ((8), person (kid: 10 age: 12 dob: 16 food:20))
+// we also have "P1.kid" -> ((22,10), unbound) "P1.age" -> ((23,12),unbound) "P1.dob" -> ((24,16),unbound) "P1.food" -> ((25,20),unbound)
+
+//After "P2 = person(kid:K2 age:A2 dob:DB2 food:F4)" executed, we have
+// "P2" -> ((9), person (kid: 11 age: 13 dob: 17 food:21))
+// we also have "P2.kid" -> ((26,11), unbound) "P2.age" -> ((27,13),unbound) "P2.dob" -> ((28,17),unbound) "P2.food" -> ((29,21),unbound)
+
+// After "K1 = kid(age:A3 food:F1)" executed, we have
+//  "K1" -> ((10), kid (age:A3 food:F1))
+// we also have "k1.age" -> ((30,14),unbound), "k1.food"-> ((31,18),unbound)
+
+// After "K2 = kid(age:A4 food:F2)" executed, we have
+//  "K2" -> ((11), kid (age:A4 food:F2))
+// we also have "k2.age" -> ((32,15),unbound), "k2.food"-> ((33,19),unbound)
+
+// After "A3 = 12" executed, we have
+// "A3" -> ((14),12) "k1.age" -> ((30,14),12)
+
+// "After "F2 = spaghetti()" executed, we have
+// "F2" -> ((19),spaghetti()), we also have "K2.food" -> ((33,19), spaghetti())
+
+// "After "A1 = 54" executed, we have
+// "A1" -> ((12),54), we also have "P1.age" -> ((23,12), 54)
+
+// "After "DB2 = 1978" executed, we have
+// "DB2" -> ((17),1978), we also have "P2.dob" -> ((28,17), 1978)
+
+// united person
+// Before the "P1 = P2" execute, we have:
+// P1 = ((8),person( kid: ((22,10), kid(age: ((30,14),12) food:((31,18), unbound))) age: ((23,12), 54) dob: ((24,16),unbound) food: ((25,20),unbound) ) in store
+// P2 = ((9),person( kid: ((26,11), kid(age:((32,15),unbound) food: ((33,19), spaghetti()))) age: ((27,13),unbound) dob: ((28,17),1978) food: ((29,21),unbound) ) in store
+// Thus when instruction "P1=P2" execute, we have ((8, 9), person(age:23 dob:24 food:25 kid:22))
+
+// united person.ages
+// Then we start united their age, P1.age = ((23,12) ,54), P2.age = ((27,13),unbound)
+// Therefore when we united them together, we got ((23,12,27,13), 54) in the store
+
+// united person.dob
+// then we united their dob, we have P1.dob is unbound ((24,16),unbound), but P2.dob is bound ((28,17),1978)
+// Therefore when we united them together we got ((24,16,28,17),1978) in the store
+
+// united person.food
+// then we united their food, we have P1.food = ((25,20),unbound) and P2.food= ((29,21),unbound). Both of them are unbound.
+// Therefore when we united them together, we got ((25,20,29,21), unbound)
+
+// united kids
+// Then we united their kid, we got P1.kid = ((22,10), kid(age: ((30,14),12) food:((31,18), unbound))), P2.kid=  ((26,11), kid(age:((32,15),unbound) food: ((33,19), spaghetti())))
+// So we got ((22, 10, 26, 11), kid(age:30 food:31))
+
+// united kids ages
+// for uniting kids ages, we have K1.age, we have K1.age=((30,14),12), K2.age we have K2.age= ((32,15),unbound)
+// when we united them together, we have ((30,14,32,15),12)
+
+// united kids food
+// for uniting kids food, we got K1.food= ((31,18),unbound), K2.food= ((33,19), spaghetti())
+// when we united them together, we got ((31,18,33,19), spaghetti())

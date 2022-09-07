@@ -1,0 +1,40 @@
+// Append function p 133
+
+local Append L1 L2 L3 Out Reverse Out1 in 
+   Append = fun {$ Ls Ms}
+               case Ls 
+                  of nil then Ms
+                  [] '|'(1:X 2:Lr) then Y in
+                     Y = {Append Lr Ms}
+                     // skip Full
+                     (X|Y)
+                end
+            end
+
+   Reverse = fun {$ Ls}
+               case Ls
+                  of nil then nil
+                  [] '|'(1:X 2:Xr) then Xl in
+                  Xl = (X|nil)
+                  {Append {Reverse Xr} Xl}
+               end
+            end
+
+
+   L1 = (1|(2|(3|nil)))
+   L2 = (4|(5|(6|nil)))
+   L3 = (7|(8|(9|(10|nil))))
+
+   Out = {Append L1 L2}
+   Out1 = {Reverse L3}
+   skip Browse Out
+   skip Browse Out1
+   skip Full
+end
+
+// From the information of the store, when we pass L3: (7|(8|(9|(10|nil))))  into Reverse,
+// it is actually doing :
+// 1. {Append {Reverse [8,9,10]} [7]} ------> {Append [10,9,8] [7]}------>[10,9,8,7] (final result)
+// 2. {Reverse [8,9,10]} ----> {Append {Reverse [9,10]} [8]} ------> {Append [10,9] [8]}
+// 3. {Reverse [9,10]} ----> {Append {Reverse [10]} [9]} ------> {Append [10] [9]} ------>[10,9]
+// 4. {Reverse [10]} ----> {Append {Reverse []} [10]} ----->[10]

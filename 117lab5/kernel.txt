@@ -1,0 +1,99 @@
+// 1) 
+// content in sugar2kern: [local ["A","B"] [A = false(),local ["EXU1"] [EXU1 = true(),if EXU1 then [skip/BA] else [local ["EXU2"] [EXU2 = B,if EXU2 then [skip] else [skip]]]],case A of tree() then [skip] else [case A of false() then [skip] else [case A of true() then [skip] else [skip]]]]
+// for If else statements, kernel dont need to write executor to bind
+// sugar2kern need to create unbound and bound executor everytime, we can just use variables directly
+local A B in 
+    A = false()
+    if true() then 
+        skip Browse A 
+    else
+        if B then
+            skip Basic
+        else 
+            skip Basic
+        end
+    end
+//  content in sugar2kern: case A of tree() then [skip] else [case A of false() then [skip] else [case A of true() then [skip] else [skip]]]]
+// for this one, both are almost like the same thing, dont need to write any extra executor
+//  
+    case A of tree() then
+        skip Basic
+    end
+    case A of false then
+        skip Basic
+     end
+    case A of true then
+        skip Basic
+     end
+end
+    // 2
+    // content in sugar2kern: local ["A"] [A = 2,local ["EXU1"] [local ["EXU2","EXU3"] [EXU2 = A,EXU3 = 1,"Eq" "EXU2" "EXU3" "EXU1"],if EXU1 then [skip] else [skip]],local ["EXU1"] [local ["EXU2","EXU3"] [EXU2 = A,local ["EXU5","EXU6"] [EXU5 = 3,EXU6 = 1,"IntMinus" "EXU5" "EXU6" "EXU3"],"Eq" "EXU2" "EXU3" "EXU1"],if EXU1 then [skip/BA] else [skip]]]
+    // in sugar2kern, it need to call extra executor to bind variables or statements
+    // those local variables are not allowed to use directly in it
+    local A One Two Three A Res Res2 in 
+        One = 1
+        Two = 2 
+        Three =3
+        A = 2
+        {Eq A One Res}
+        if Res then 
+            skip Basic 
+        end
+        {Eq A Two Res2}
+        if Res then
+            skip Browse A
+        end
+    end
+
+    // 3 
+    // content in sugar2kern: local ["X","Y"] [local ["T"] [local ["EXU1","EXU2"] [EXU1 = 3,EXU2 = T,T = tree(1:EXU1 2:EXU2)],local ["A","B","PTU0"] [PTU0 = tree(1:A 2:B),PTU0 = T,local ["EXU1"] [local ["EXU2","EXU3"] [EXU2 = 1,EXU3 = 1,"Eq" "EXU2" "EXU3" "EXU1"],if EXU1 then [local ["Z"] [local ["B"] [local ["EXU1","EXU2"] [EXU1 = 5,EXU2 = 2,"IntMinus" "EXU1" "EXU2" "B"],skip/BB]]] else [skip]]]]]
+    // this one is kind of difference with other two below, for assign a local variable, it will use a variable called "PTU0"
+    // espiecially when local variables go to data record. sugar2kern will automatically assign those record to PTU0.
+local T = tree(1:3 2:T) X Y in
+    local tree(1:A 2:B) = T C D Five Two in
+        X = 1
+        Y = 1
+        Five = 5
+        Two = 2
+        {Eq X Y C}
+        {IntMinus Five Two D}
+        if C then B = D Z  in
+            skip Browse B
+        end
+    end
+end
+
+// 4
+// content in sugar2kern: local ["Fun","R"] [Fun = proc {$ X EXU1} [EXU1 = X],local ["EXU1"] [EXU1 = 4,"Fun" "EXU1" "R"],skip/BR]
+//for sugar2kern, number are not always the same thing.
+//it used extra executor to bind the other variable, but for kelnel syntax, we dont need to use something like EXU1
+// to define that, because it will automatically bind those together
+// also, sugar2kern always put evey variable in side of the procedure into the definition
+local Fun R in
+    Fun = proc {$ X}
+        R  =  X
+        skip Browse R
+    end
+    {Fun 4}
+end
+
+// 5 
+// content in sugar2kern: local ["A","B"] [skip,local ["EXU1","EXU2","EXU3"] [EXU1 = 4,EXU2 = B,local ["EXU4","EXU5"] [EXU4 = B,EXU5 = B,EXU3 = '#'(1:EXU4 2:EXU5)],A = rdc(1:EXU1 2:EXU2 3:EXU3)],local ["EXU1","EXU2"] [EXU1 = 5,local ["EXU4","EXU5"] [EXU4 = 3,EXU5 = 4,"IntMinus" "EXU4" "EXU5" "EXU2"],"IntPlus" "EXU1" "EXU2" "B"],skip/BA,skip/BB,skip/s]]
+// In the translation, '#' is also a type of record. instead of "B#B", in translation, it becomes " '#'(1:B 2:B) "
+local A B in
+    skip Basic
+    A = rdc(1:4 2:B 3:(B#B)) 
+    local Three Four Five C in
+        Three = 3
+        Four = 4
+        Five = 5
+        {IntMinus Three Four C}
+        {IntPlus C Five B}
+        skip Browse A
+        skip Browse B
+        skip Store
+    end
+end
+
+
+

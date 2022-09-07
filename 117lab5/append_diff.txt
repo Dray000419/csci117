@@ -1,0 +1,48 @@
+// Append with difference lists
+//local L1 End1 L2 End2 H1 T1 H2 T2 LNew Reverse L3 L4 Out1 in
+ //  L1 = ((1|(2|End1)) # End1)        // List [1,2] as a difference list
+  // L2 = ((3|(4|End2)) # End2)        // List [3,4] as a difference list
+   
+ //  L1 = (H1 # T1)                    // Pattern match, name head and tail
+  // L2 = (H2 # T2)                    // Pattern match, name head and tail
+ //  T1 = H2                           // Bind/unify tail of L1 with head of L2
+
+ //  LNew = (L1 # T2)                  // Build a new difference list
+   
+ //  skip Browse LNew
+
+// reverse
+   Reverse = fun {$ Xs}
+      local ReverseD Out in
+         ReverseD = fun {$ Xs Y Y1}
+            case Xs 
+               of nil then Y = Y1 Y
+               [] '|'(1:X 2:Xr) then 
+               {ReverseD Xr Y (X|Y1)}
+            end
+         end
+      Out = {ReverseD Xs Out nil}
+      Out
+      end
+   end
+
+   L3 = (4|(3|(2|(1|nil))))
+
+   Out1 = {Reverse L3}
+
+   skip Browse Out1
+   skip Full
+
+end
+end
+
+// runFull "declarative" "append_diff.txt" "append_diffOut.txt"   
+
+// From the information of the store, when we pass [4,3,2,1] into Reverse
+// {Reverse [4,3,2,1]} -----> {ReverseD [4,3,2,1] Out []} -----> Return [1,2,3,4]
+// {ReverseD [4,3,2,1] Out []} ------> {ReverseD [3,2,1] Out [4]}
+// {ReverseD [3,2,1] Out [4]} ------> {ReverseD [2,1] Out [3,4]}
+// {ReverseD [2,1] Out [3,4]} ------> {ReverseD [1] Out [2,3,4]}
+// {ReverseD [1] Out [2,3,4]} ------> {ReverseD [] Out [1,2,3,4]}
+// {ReverseD [] Out [1,2,3,4]} ------> for the [] case, ReverseD bound [1,2,3,4] to Out, Out = [1,2,3,4] 
+// Return Out

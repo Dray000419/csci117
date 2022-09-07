@@ -1,0 +1,57 @@
+// Haskell version of fib:
+//    fib :: Int -> Int
+//    fib 0 = 1
+//    fib 1 = 1
+//    fib x = fib (x-1) + fib (x-2)
+//
+// Rewrite fib in Oz kernel syntax using the template below, including
+// a "skip stack" command added to the first base case, using the 
+// primitive operations {Eq X Y B}, {IntMinus X Y A}, and {IntPlus X Y A}.
+// 
+// Run through the Oz interpreter by calling
+//    runFull "declarative" "fib_oz.txt" "fib_oz.out"
+// after ghci fib_oz.txt and give a brief explanation of each of the stack outputs.
+
+local X Result Fib in
+  Fib = proc {$ X Y}
+    local Zero One Two A B C D E F in
+      Zero =0
+      One = 1
+      Two = 2
+      {Eq X Zero A}
+      {Eq X One B}
+      if A then
+        Y=1
+        skip Stack
+      else
+        if B then
+          Y=1
+          skip Basic
+        else 
+          {IntMinus X One C}
+          {IntMinus X Two D}
+          {Fib C E}
+          {Fib D F}
+          {IntPlus E F Y}
+        end
+      end
+    end
+  end
+  X = 4
+  {Fib X Result}
+  skip Browse Result
+end
+
+
+// Stack :    -----> It is for Fib(3)
+// "local [\"EXU1\",\"EXU2\",\"EXU3\"] [EXU1 = E,EXU2 = F,EXU3 = Y,\"IntPlus\" \"EXU1\" \"EXU2\" \"EXU3\"]  ----> It created three arguments, and assigned E,F,Y to them, then putted them in IntPlus
+// local [\"EXU1\",\"EXU2\"] [EXU1 = D,EXU2 = F,\"Fib\" \"EXU1\" \"EXU2\"]  -----> It created two arguments, and assigned D,F to them, then putted them in Fib
+// local [\"EXU1\",\"EXU2\",\"EXU3\"] [EXU1 = E,EXU2 = F,EXU3 = Y,\"IntPlus\" \"EXU1\" \"EXU2\" \"EXU3\"]  ----> Same as line 46
+// local [\"EXU1\",\"EXU2\"] [EXU1 = D,EXU2 = F,\"Fib\" \"EXU1\" \"EXU2\"]    ------> same as line 47 
+// local [\"EXU1\",\"EXU2\",\"EXU3\"] [EXU1 = E,EXU2 = F,EXU3 = Y,\"IntPlus\" \"EXU1\" \"EXU2\" \"EXU3\"]skip/BResult"  ----> It created three arguments, and assigned E,F,Y to them, then putted them in IntPlus, after finished, run skip Browse Result
+
+// Stack :  ------> It is for Fib(2)
+// "local [\"EXU1\",\"EXU2\",\"EXU3\"] [EXU1 = E,EXU2 = F,EXU3 = Y,\"IntPlus\" \"EXU1\" \"EXU2\" \"EXU3\"]  ---------> It created three arguments, and assigned E,F,Y to them, then putted them in IntPlus
+// local [\"EXU1\",\"EXU2\",\"EXU3\"] [EXU1 = E,EXU2 = F,EXU3 = Y,\"IntPlus\" \"EXU1\" \"EXU2\" \"EXU3\"]skip/BResult" ----> It created three arguments, and assigned E,F,Y to them, then putted them in IntPlus, after finished, run skip Browse Result
+
+// Result : 5

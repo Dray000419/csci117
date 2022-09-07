@@ -1,0 +1,8 @@
+Producer = proc {$ N Limit Out}
+  if (N<Limit) then T N1 in
+    Out = (N|T)
+    N1 = (N + 1)
+    {Producer N1 Limit T}
+  else Out = nil
+  end
+end

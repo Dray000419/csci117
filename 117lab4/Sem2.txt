@@ -1,0 +1,72 @@
+// Run this program through the Oz interpreter by calling
+//    runFull "declarative" "Sem2.txt" "Sem2.out"
+// Explain the resulting store
+
+local Max Y in
+  Max = proc {$ X}
+    local B in 
+        {GT X Y B}
+        if B then
+          skip Browse X
+        else
+          skip Browse Y
+        end
+    end
+  end
+  Y = 3
+  local X Y in 
+    Y = 6
+    X = 4
+    skip Full
+    {Max X}
+  end
+end
+
+ //  [local ["Max","Y"] [Max = proc {$ X} [local ["B"] [local ["EXU1","EXU2","EXU3"] [EXU1 = X,EXU2 = Y,EXU3 = B,"GT" "EXU1" "EXU2" "EXU3"],local ["EXU1"] [EXU1 = B,if EXU1 then [skip/BX] else [skip/BY]]]],Y = 3,local ["X","Y"] [Y = 6,X = 4,skip/f,local ["EXU1"] [EXU1 = X,"Max" "EXU1"]]]]
+// Store : 
+// ((10), 4), 
+// ((11), 6),
+// ((8), proc(["X"],[local ["B"] [local ["EXU1","EXU2","EXU3"] [EXU1 = X,EXU2 = Y,EXU3 = B,"GT" "EXU1" "EXU2" "EXU3"],local ["EXU1"] [EXU1 = B,if EXU1 then [skip/BX] else [skip/BY]]]],[("Y",9),("GT",4)])),
+// ((9), 3),
+// ((1), Primitive Operation),
+// ((2), Primitive Operation), 
+// ((3), Primitive Operation),
+// ((4), Primitive Operation),
+// ((5), Primitive Operation),
+// ((6), Primitive Operation),
+// ((7), Primitive Operation)
+
+// Mutable Store: Empty
+// Current Environment : ("X" -> 10, "Y" -> 11, "Max" -> 8, "Y" -> 9, "IntPlus" -> 1, "IntMinus" -> 2, "Eq" -> 3, "GT" -> 4, "LT" -> 5, "Mod" -> 6, "IntMultiply" -> 7)
+// Stack : "local [\"EXU1\"] [EXU1 = X,\"Max\" \"EXU1\"]"
+// X : 4
+
+
+// For the Environment, program set up primitive operations, and then add them to environment.
+// Environment: ( "IntPlus" -> 1, "IntMinus" -> 2, "Eq" -> 3, "GT" -> 4, "LT" -> 5, "Mod" -> 6, "IntMultiply" -> 7 )
+
+// "local Max Y in..." created two variables Max and Y, and putted them in environment
+// Environment: ("Max" -> 8, "Y" -> 9, "IntPlus" -> 1, "IntMinus" -> 2, "Eq" -> 3, "GT" -> 4, "LT" -> 5, "Mod" -> 6, "IntMultiply" -> 7)
+
+// "local X Y in ..." created two variables X and Y and putted them in environment, there are two "Y"s, but in different layers
+// Environment : ("X" -> 10, "Y" -> 11, "Max" -> 8, "Y" -> 9, "IntPlus" -> 1, "IntMinus" -> 2, "Eq" -> 3, "GT" -> 4, "LT" -> 5, "Mod" -> 6, "IntMultiply" -> 7)
+
+// In the beginning of this program, it created a procedure Max.
+// what is does is it takes an argument, and then compare the arg with a local variable X inside.
+// if X is greater then Y, then it displays X, otherwise Y.
+
+// After "local Max Y in ...." executed, there are two variables added to Environment. procedure Max and argument Y 
+// We got "Max" -> ((8), proc) "Y" -> ((9),unbound)
+
+// After "Y=3" executed, program bound Y to value 3, we have "Y" -> ((9),3)
+
+// After " local X Y in...." executed, there are two variables added to Environment. X and another Y (in the inner layer)
+// we have "X" -> ((10),unbound), "Y" -> ((11),unbound)
+
+// After "Y=6" and "X=4" executed, program bound Y to 6 and X to 4, then we have
+// "X" -> ((10),4) "Y" -> ((11),6)
+
+// After skip Full, procedure Max (4) executed.
+// Then in the outer layer, Y is bound to 3. 
+// Thus, inside Max, it compared 4 and 3, and then assigned to B.
+// Finally, X which is 4 is greater then Y, so X : 4 is displayed.
